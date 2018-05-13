@@ -61,12 +61,10 @@ tst_in_all = pd.concat(tst_sets, axis=1)
 # print(train_in_audio_2.describe())
 # print(train_in_all.describe())
 
-
 # Choose all points for learning (ommitting 'ID' column)
-cols = [str(x) for x in range(9216)]
-t_X = train_in_all[cols]
-v_X = val_in_all[cols]
-tst_X = tst_in_all[cols]
+t_X = train_in_all.drop('ID',axis=1)
+v_X = val_in_all.drop('ID',axis=1)
+tst_X = tst_in_all.drop('ID',axis=1)
 # print(X)
 
 # Rename columns
@@ -80,8 +78,8 @@ v_y = val_out['Label']
 # print(y)
 
 # Load model
-classifier = XGBClassifier()
-classifier.fit(t_X, t_y)
+classifier = XGBClassifier(n_estimators=1000)
+print(classifier.fit(t_X, t_y, eval_set=[(v_X,v_y)], early_stopping_rounds=10))
 v_out = classifier.predict(v_X)
 
 correct = [index for index, value in enumerate(v_out) if v_y[index] == value]
@@ -96,18 +94,3 @@ submission = pd.DataFrame({
     'Label': tst_out
 })
 submission.to_csv("submission.csv", index=False)
-
-
-correct = 0
-best = 0
-for i in range(100,1000):
-    classifier = XGBClassifier(n_estimators=i)
-    classifier.fit(t_X, t_y)
-    v_out = classifier.predict(v_X)
-    c = [index for index, value in enumerate(v_out) if v_y[index] == value]
-    if c > correct:
-        correct = c
-        best = i
-        print(best,correct)
-
-print(best,correct)
