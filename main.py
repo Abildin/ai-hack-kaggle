@@ -49,6 +49,13 @@ val_sets = [val_in_audio_1, val_in_audio_2, val_in_video_fc, val_in_video_pool]
 val_in_all = pd.concat(val_sets, axis=1)
 val_out = pd.read_csv(v_target_pth)
 
+tst_in_video_fc = pd.read_csv(tst_video_emb_fc_pth)
+tst_in_video_pool = pd.read_csv(tst_video_emb_pool_pth)
+tst_in_audio_1 = pd.read_csv(tst_audio_feat_1_pth)
+tst_in_audio_2 = pd.read_csv(tst_audio_feat_2_pth)
+tst_sets = [tst_in_audio_1, tst_in_audio_2, tst_in_video_fc, tst_in_video_pool]
+tst_in_all = pd.concat(tst_sets, axis=1)
+
 # print(train_in_video_fc.describe())
 # print(train_in_video_pool.describe())
 # print(train_in_audio_1.describe())
@@ -70,17 +77,15 @@ v_y = val_out['Label']
 # Load model
 classifier = RandomForestClassifier()
 classifier.fit(t_X, t_y)
-out = classifier.predict(v_X)
+v_out = classifier.predict(v_X)
 
-MAE = mean_absolute_error(v_y, out)
-print(MAE)
-correct = [index for index, value in enumerate(out) if v_y[index] == value]
-wrong = [index for index, value in enumerate(out) if v_y[index] != value]
+correct = [index for index, value in enumerate(v_out) if v_y[index] == value]
+wrong = [index for index, value in enumerate(v_out) if v_y[index] != value]
 
 print(len(correct), len(wrong))
 
 submission = pd.DataFrame({
     'ID': val_out.ID,
-    'Label': out
+    'Label': v_out
 })
 submission.to_csv("submission.csv", index=False)
