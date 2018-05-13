@@ -31,7 +31,6 @@ tst_audio_feat_1_pth = os.path.join(pth_base, "test_audio_feat_1.csv")
 tst_audio_feat_2_pth = os.path.join(pth_base, "test_audio_feat_2.csv")
 
 # Load data
-print(t_video_emb_fc_pth)
 train_in_video_fc = pd.read_csv(t_video_emb_fc_pth)
 train_in_video_pool = pd.read_csv(t_video_emb_pool_pth)
 train_in_audio_1 = pd.read_csv(t_audio_feat_1_pth)
@@ -67,6 +66,7 @@ tst_in_all = pd.concat(tst_sets, axis=1)
 cols = [str(x) for x in range(9216)]
 t_X = train_in_all[cols]
 v_X = val_in_all[cols]
+tst_X = tst_in_all[cols]
 # print(X)
 
 # Choose output values
@@ -84,8 +84,10 @@ wrong = [index for index, value in enumerate(v_out) if v_y[index] != value]
 
 print(len(correct), len(wrong))
 
+tst_out = classifier.predict(tst_X)
+
 submission = pd.DataFrame({
     'ID': val_out.ID,
-    'Label': v_out
+    'Label': tst_out
 })
 submission.to_csv("submission.csv", index=False)
