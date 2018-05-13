@@ -4,7 +4,7 @@ import os
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import mean_absolute_error
-
+from xgboost import XGBClassifier
 
 # Get home path
 home = os.environ.get('HOME', '/root')
@@ -69,13 +69,18 @@ v_X = val_in_all[cols]
 tst_X = tst_in_all[cols]
 # print(X)
 
+# Rename columns
+t_X.columns = [ str(x) for x in range(14091) ]
+v_X.columns = [ str(x) for x in range(14091) ]
+tst_X.columns = [ str(x) for x in range(14091) ]
+
 # Choose output values
 t_y = train_out['Label']
 v_y = val_out['Label']
 # print(y)
 
 # Load model
-classifier = RandomForestClassifier()
+classifier = XGBClassifier()
 classifier.fit(t_X, t_y)
 v_out = classifier.predict(v_X)
 
