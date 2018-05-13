@@ -5,12 +5,13 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import mean_absolute_error
 from xgboost import XGBClassifier
+from sklearn.neural_network import MLPClassifier
 
 # Get home path
 home = os.environ.get('HOME', '/root')
 
 # Define base location of datasets
-pth_base = os.path.join(home, ".kaggle/competitions/ai-hack-2018-minsk-stc")
+pth_base = os.path.join(home, ".kaggle/competitions/ai-hack-2018-minsk")
 
 # Dataset paths
 t_video_emb_fc_pth = os.path.join(pth_base, "train_video_emb_fc.csv")
@@ -68,9 +69,9 @@ tst_X = tst_in_all.drop('ID',axis=1)
 # print(X)
 
 # Rename columns
-t_X.columns = [ str(x) for x in range(14091) ]
-v_X.columns = [ str(x) for x in range(14091) ]
-tst_X.columns = [ str(x) for x in range(14091) ]
+t_X.columns = [ str(x) for x in range(len(t_X.columns)) ]
+v_X.columns = [ str(x) for x in range(len(t_X.columns)) ]
+tst_X.columns = [ str(x) for x in range(len(t_X.columns)) ]
 
 # Choose output values
 t_y = train_out['Label']
@@ -78,14 +79,13 @@ v_y = val_out['Label']
 # print(y)
 
 # Load model
-classifier = XGBClassifier(n_estimators=1000)
-print(classifier.fit(t_X, t_y, eval_set=[(v_X,v_y)], early_stopping_rounds=10))
+classifier = XGBClassifier(n_estimators=1000, eta=0.3, silent = 1, subsample=0.1)
+print(classifier.fit(t_X, t_y, eval_set=[(v_X,v_y)], early_stopping_rounds=5))
+
 v_out = classifier.predict(v_X)
-
 correct = [index for index, value in enumerate(v_out) if v_y[index] == value]
-wrong = [index for index, value in enumerate(v_out) if v_y[index] != value]
 
-print(len(correct), len(wrong))
+print(len(correct))
 
 tst_out = classifier.predict(tst_X)
 
