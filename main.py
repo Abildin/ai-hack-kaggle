@@ -10,7 +10,7 @@ from sklearn.metrics import mean_absolute_error
 home = os.environ.get('HOME', '/root')
 
 # Define base location of datasets
-pth_base = os.path.join(home, "/.kaggle/competitions/ai-hack-2018-minsk-stc")
+pth_base = os.path.join(home, ".kaggle/competitions/ai-hack-2018-minsk-stc")
 
 # Dataset paths
 t_video_emb_fc_pth = os.path.join(pth_base, "train_video_emb_fc.csv")
@@ -31,6 +31,7 @@ tst_audio_feat_1_pth = os.path.join(pth_base, "test_audio_feat_1.csv")
 tst_audio_feat_2_pth = os.path.join(pth_base, "test_audio_feat_2.csv")
 
 # Load data
+print(t_video_emb_fc_pth)
 train_in_video_fc = pd.read_csv(t_video_emb_fc_pth)
 train_in_video_pool = pd.read_csv(t_video_emb_pool_pth)
 train_in_audio_1 = pd.read_csv(t_audio_feat_1_pth)
