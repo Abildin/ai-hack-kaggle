@@ -79,7 +79,8 @@ v_y = val_out['Label']
 # print(y)
 
 # Load model
-classifier = XGBClassifier(n_estimators=1000, eta=0.3, silent = 1, subsample=0.1)
+classifier = XGBClassifier(n_estimators=1000, eta=0.3, silent = 1, 
+    subsample=0.1, max_delta_step=100, objective="multi:softmax", num_class="8")
 print(classifier.fit(t_X, t_y, eval_set=[(v_X,v_y)], early_stopping_rounds=5))
 
 v_out = classifier.predict(v_X)
