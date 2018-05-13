@@ -96,3 +96,18 @@ submission = pd.DataFrame({
     'Label': tst_out
 })
 submission.to_csv("submission.csv", index=False)
+
+
+correct = 0
+best = 0
+for i in range(100,1000):
+    classifier = XGBClassifier(n_estimators=i)
+    classifier.fit(t_X, t_y)
+    v_out = classifier.predict(v_X)
+    c = [index for index, value in enumerate(v_out) if v_y[index] == value]
+    if c > correct:
+        correct = c
+        best = i
+        print(best,correct)
+
+print(best,correct)
