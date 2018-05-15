@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
-
+import matplotlib.pyplot as plt 
+import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import mean_absolute_error
@@ -69,26 +70,99 @@ tst_X = tst_in_all.drop('ID',axis=1)
 # print(X)
 
 # Rename columns
-t_X.columns = [ str(x) for x in range(len(t_X.columns)) ]
-v_X.columns = [ str(x) for x in range(len(t_X.columns)) ]
-tst_X.columns = [ str(x) for x in range(len(t_X.columns)) ]
+feature_names = [ "C%s" % (str(x)) for x in range(len(t_X.columns)) ]
+t_X.columns = feature_names
+v_X.columns = feature_names
+tst_X.columns = feature_names
 
 # Choose output values
 t_y = train_out['Label']
 v_y = val_out['Label']
 # print(y)
 
+
+
+"""
+opt = {
+    'stpngs': [ x for x in range(0,500,5)]
+}
+
+def combiner(options,train_in, train_out, val_in, val_out):
+    correct = 0
+    best_opt = {
+        'stpngs':0
+    }
+    for e in options['stpngs']: 
+        classifier = XGBClassifier(n_estimators=1000, eta=0.3, silent=1, subsample=0.1, 
+        objective="multi:softmax", num_class="8")
+        classifier.fit(train_in, train_out, eval_set=[(val_in,val_out)], early_stopping_rounds=e)
+        v_out = classifier.predict(v_X)
+        res = [index for index, value in enumerate(v_out) if val_out[index] == value]
+        if len(res) > correct:
+            correct = len(res)
+            best_opt = {
+                'stpngs':e
+            }
+
+        print(correct, best_opt)
+        print(len(res), {
+            'stpngs':e
+        })
+    return (correct, best_opt)
+
+c,opts=combiner(opt,t_X,t_y,v_X,v_y)
+print("Best result is:\n")
+print(c,opts)"""
+
+classifier = RandomForestClassifier(n_estimators=100,random_state=11)
+classifier.fit(t_X,t_y)
+t_err = np.mean(t_y!=classifier.predict(t_X))
+v_err = np.mean(v_y!=classifier.predict(v_X))
+
+print(t_err,v_err)
+
+importrances = classifier.feature_importances_
+
+indices = np.argsort(importrances)[::-1]
+
+best_features_names = []
+print("Importances:\n")
+for f, i in enumerate(indices[:900]):
+    #print("{:2d}. feature '{:5s}'  ({:.4f})".format(f+1,feature_names[i],importrances[i]))
+    best_features_names.append(feature_names[i])
+    
+print(best_features_names)
+
+
+
+
+
+
+
+# Choose all points for learning (ommitting 'ID' column)
+tX = t_X[best_features_names]
+vX = v_X[best_features_names]
+tstX = tst_X[best_features_names]
+# print(X)
+
 # Load model
 classifier = XGBClassifier(n_estimators=1000, eta=0.3, silent = 1, 
-    subsample=0.1, max_delta_step=100, objective="multi:softmax", num_class="8")
-print(classifier.fit(t_X, t_y, eval_set=[(v_X,v_y)], early_stopping_rounds=5))
+    subsample=0.1, objective="multi:softmax", num_class="8")
+classifier.fit(tX, t_y, eval_set=[(vX,v_y)], early_stopping_rounds=50)
 
-v_out = classifier.predict(v_X)
+t_err = np.mean(t_y!=classifier.predict(tX))
+v_err = np.mean(v_y!=classifier.predict(vX))
+
+print(t_err,v_err)
+
+
+
+v_out = classifier.predict(vX)
 correct = [index for index, value in enumerate(v_out) if v_y[index] == value]
 
 print(len(correct))
 
-tst_out = classifier.predict(tst_X)
+tst_out = classifier.predict(tstX)
 
 submission = pd.DataFrame({
     'ID': val_out.ID,
